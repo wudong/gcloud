@@ -9,7 +9,7 @@ Terraform configuration to provision a GCP project with Always Free tier resourc
 | **GCP Project** | `wudong-agent-master` | — |
 | **Compute Engine VM** | `e2-micro` (2 vCPU, 1 GB RAM), Debian 12 | ✅ Always Free (us-central1) |
 | **Cloud Storage** | 5 GB, US multi-region, versioning enabled | ✅ Always Free |
-| **Secret Manager** | DB password (auto-generated) | ✅ Always Free (6 secret versions) |
+| **Secret Manager** | DB password (auto-generated), Cloudflare DNS API key | ✅ Always Free (6 secret versions) |
 | **Cloud SQL** | PostgreSQL 15, `db-f1-micro` (shared CPU) | ✅ Always Free |
 | **VPC Network** | Default network + firewall (SSH, HTTP, HTTPS) | ✅ Always Free |
 
@@ -90,6 +90,17 @@ gcloud secrets versions access latest --secret="db-password" --project="wudong-a
 
 # Or from Terraform output (won't show in terminal — stored in state)
 terraform output -raw db_password
+```
+
+### Cloudflare DNS API Key
+
+```bash
+# Read the key
+gcloud secrets versions access latest --secret="cloudflare-dns-key" --project="wudong-agent-master"
+
+# Use with Cloudflare API
+export CLOUDFLARE_API_TOKEN=$(gcloud secrets versions access latest --secret="cloudflare-dns-key" --project="wudong-agent-master")
+curl -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" https://api.cloudflare.com/client/v4/user/tokens/verify
 ```
 
 ### Connect to PostgreSQL
