@@ -11,6 +11,7 @@ Terraform configuration to provision a GCP project with Always Free tier resourc
 | **Cloud Storage** | 5 GB, US multi-region, versioning enabled | ✅ Always Free |
 | **Secret Manager** | DB password (auto-generated), Cloudflare DNS API key | ✅ Always Free (6 secret versions) |
 | **Cloud SQL** | PostgreSQL 15, `db-f1-micro` (shared CPU) | ✅ Always Free |
+| **DNS** | `wudong-agent-master.graceliu.uk` → VM public IP | ✅ Cloudflare |
 | **VPC Network** | Default network + firewall (SSH, HTTP, HTTPS) | ✅ Always Free |
 
 ## Prerequisites
@@ -61,6 +62,10 @@ Type `yes` to confirm. First apply may take 5–10 minutes (API enablement + Clo
 ### SSH into the VM
 
 ```bash
+# Via domain name
+ssh wudong-agent-master.graceliu.uk
+
+# Or via gcloud
 gcloud compute ssh main-vm --project wudong-agent-master --zone us-central1-a
 ```
 
