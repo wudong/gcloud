@@ -1,0 +1,35 @@
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfplan
+*.tfvars.json
+.terraform.tfvars.lock.hcl
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Sensitive / user-specific
+terraform.tfvars
+*.auto.tfvars
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# SSH
+.ssh/
+*.pem
+
+# Vault — credentials and secrets
+vault/**/secrets.md
