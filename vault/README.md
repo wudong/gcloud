@@ -15,4 +15,5 @@ vault/
 
 | Namespace | Description | Deployed |
 |---|---|---|
+| `tt-players` | TT Players aggregator — UK league results and player statistics | 2026-07-05 |
 | `tt-learning-library` | TT Learning Library PWA — tutorial video knowledge graph | 2026-07-05 |
