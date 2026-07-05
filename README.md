@@ -6,7 +6,7 @@ Terraform configuration to provision a GCP project with Always Free tier resourc
 
 | Resource | Details | Free Tier |
 |---|---|---|
-| **GCP Project** | `wd-agents` | — |
+| **GCP Project** | `wudong-agent-master` | — |
 | **Compute Engine VM** | `e2-micro` (2 vCPU, 1 GB RAM), Debian 12 | ✅ Always Free (us-central1) |
 | **Cloud Storage** | 5 GB, US multi-region, versioning enabled | ✅ Always Free |
 | **Secret Manager** | DB password (auto-generated) | ✅ Always Free (6 secret versions) |
@@ -61,7 +61,7 @@ Type `yes` to confirm. First apply may take 5–10 minutes (API enablement + Clo
 ### SSH into the VM
 
 ```bash
-gcloud compute ssh main-vm --project wd-agents --zone us-central1-a
+gcloud compute ssh main-vm --project wudong-agent-master --zone us-central1-a
 ```
 
 Or use the output directly:
@@ -86,7 +86,7 @@ gsutil cp gs://wd-agents-storage-bucket/test.txt .
 
 ```bash
 # From Secret Manager
-gcloud secrets versions access latest --secret="db-password" --project="wd-agents"
+gcloud secrets versions access latest --secret="db-password" --project="wudong-agent-master"
 
 # Or from Terraform output (won't show in terminal — stored in state)
 terraform output -raw db_password
@@ -99,7 +99,7 @@ terraform output -raw db_password
 gcloud components install cloud_sql_proxy
 
 # Start the proxy
-cloud_sql_proxy -instances="wd-agents:us-central1:wd-agents-pg"=tcp:5432 &
+cloud_sql_proxy -instances="wudong-agent-master:us-central1:wd-agents-pg"=tcp:5432 &
 
 # Connect with psql
 psql "host=127.0.0.1 port=5432 user=app-user dbname=app-db sslmode=disable"
