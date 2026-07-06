@@ -26,12 +26,12 @@ const FeedbackBody = z.object({
   page_path: z.string().max(500).optional().nullable(),
   page_title: z.string().max(200).optional().nullable(),
   metadata: z.record(z.unknown()).optional().default({}),
-  // Honeypot — if filled, silently reject (bot detection)
-  website: z.string().max(0).optional().default(''),
+  // Honeypot — bots fill this, we check manually after validation
+  website: z.string().optional(),
 });
 
 const UpdateBody = z.object({
-  status: z.enum(['new', 'reviewed', 'converted_to_issue', 'closed']).optional(),
+  status: z.enum(['new', 'reviewed', 'converted_to_issue', 'closed', 'dismissed']).optional(),
   github_issue_url: z.string().url().max(500).optional().nullable(),
 });
 
@@ -204,6 +204,7 @@ app.post('/feedback/multipart', async (c) => {
 app.get('/admin/feedback', requireAuth, async (c) => {
   const appId = c.req.query('app_id');
   const status = c.req.query('status');
+  const githubLinked = c.req.query('github_linked'); // 'true' | 'false' | undefined
   const limit = Math.min(parseInt(c.req.query('limit') || '50'), 200);
   const offset = parseInt(c.req.query('offset') || '0');
 
@@ -224,6 +225,13 @@ app.get('/admin/feedback', requireAuth, async (c) => {
     if (status) {
       query = sql`${query} AND status = ${status}`;
       countQuery = sql`${countQuery} AND status = ${status}`;
+    }
+    if (githubLinked === 'false') {
+      query = sql`${query} AND github_issue_url IS NULL`;
+      countQuery = sql`${countQuery} AND github_issue_url IS NULL`;
+    } else if (githubLinked === 'true') {
+      query = sql`${query} AND github_issue_url IS NOT NULL`;
+      countQuery = sql`${countQuery} AND github_issue_url IS NOT NULL`;
     }
 
     query = sql`${query} ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`;
@@ -286,6 +294,25 @@ app.patch('/admin/feedback/:id', requireAuth, zValidator('json', UpdateBody), as
   } catch (err) {
     console.error('Failed to update feedback:', err);
     return c.json({ error: 'Failed to update feedback' }, 500);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// DELETE /admin/feedback/:id — hard delete a feedback entry
+// ---------------------------------------------------------------------------
+app.delete('/admin/feedback/:id', requireAuth, async (c) => {
+  const id = c.req.param('id');
+  try {
+    const sql = getSql();
+    const [row] = await sql`
+      DELETE FROM feedback WHERE id = ${id}
+      RETURNING id
+    `;
+    if (!row) return c.json({ error: 'Not found' }, 404);
+    return c.json({ success: true, id: row.id });
+  } catch (err) {
+    console.error('Failed to delete feedback:', err);
+    return c.json({ error: 'Failed to delete feedback' }, 500);
   }
 });
 
@@ -379,6 +406,12 @@ app.get('/admin', requireAuth, async (c) => {
     <option value="reviewed">Reviewed</option>
     <option value="converted_to_issue">Converted to issue</option>
     <option value="closed">Closed</option>
+    <option value="dismissed">Dismissed</option>
+  </select>
+  <select id="filter-gh">
+    <option value="">All (linked or not)</option>
+    <option value="false">No GitHub issue</option>
+    <option value="true">Has GitHub issue</option>
   </select>
   <button onclick="loadFeedback()">🔄 Refresh</button>
   <span id="total-count" style="font-size:14px;color:#666;"></span>

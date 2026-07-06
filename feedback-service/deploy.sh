@@ -14,7 +14,7 @@ echo "=== Deploying Feedback Service to Cloud Run ==="
 
 # 1. Get secrets
 DB_PASS=$(gcloud secrets versions access latest --secret=db-password --project="${PROJECT}" 2>/dev/null)
-ADMIN_TOKEN=$(gcloud secrets versions access latest --secret=cloudflare-dns-key --project="${PROJECT}" 2>/dev/null | head -c 32)
+ADMIN_TOKEN=$(gcloud secrets versions access latest --secret=feedback-admin-token --project="${PROJECT}" 2>/dev/null)
 
 # 2. Build & push (linux/amd64 for Cloud Run)
 echo "--- Building & pushing Docker image (linux/amd64) ---"
