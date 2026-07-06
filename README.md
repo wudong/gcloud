@@ -12,6 +12,7 @@ Terraform configuration to provision a GCP project with Always Free tier resourc
 | **Secret Manager** | DB password (auto-generated), Cloudflare DNS API key | ✅ Always Free (6 secret versions) |
 | **Cloud SQL** | PostgreSQL 15, `db-f1-micro` (shared CPU) | ✅ Always Free |
 | **DNS** | `wudong-agent-master.graceliu.uk` → VM public IP | ✅ Cloudflare |
+| **Cloud Run** | `feedback-service` — shared feedback API | ✅ Free tier |
 | **VPC Network** | Default network + firewall (SSH, HTTP, HTTPS) | ✅ Always Free |
 
 ## Prerequisites
@@ -155,5 +156,18 @@ terraform destroy
 ├── terraform.tfvars    # Your configuration (do not commit)
 ├── backend.tf          # State backend (local)
 ├── .gitignore          # Files to ignore
-└── README.md           # This file
+├── README.md           # This file
+├── feedback-service/   # Shared feedback API (Cloud Run)
+│   ├── src/            # Bun + Hono API server
+│   ├── client/         # Shared client library + React hook
+│   └── deploy.sh       # Build & deploy script
+└── vault/              # Project credentials (gitignored secrets)
 ```
+
+## Feedback Service
+
+Shared feedback collection API for all apps. See [feedback-service/README.md](feedback-service/README.md).
+
+- **URL**: `https://feedback-service-126174378735.us-central1.run.app`
+- **Admin**: `/admin` (Bearer token required)
+- **DB**: Uses the same Cloud SQL PostgreSQL instance
