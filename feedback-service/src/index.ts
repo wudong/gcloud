@@ -100,7 +100,7 @@ app.post('/feedback', zValidator('json', FeedbackBody), async (c) => {
     return c.json({ success: true, id: row.id }, 201);
   } catch (err) {
     console.error('Failed to save feedback:', err);
-    return c.json({ error: 'Failed to save feedback' }, 500);
+    return c.json({ error: 'Failed to save feedback: ' + (err instanceof Error ? err.message : String(err)) }, 500);
   }
 });
 
