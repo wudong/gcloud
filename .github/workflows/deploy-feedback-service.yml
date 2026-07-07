@@ -1,0 +1,77 @@
+name: Deploy feedback-service to Cloud Run
+
+# Terraform owns the service *skeleton* (region, ingress, scaling, env, secrets,
+# Cloud SQL, runtime SA, IAM). This workflow only builds the image, pushes it to
+# Artifact Registry, and points Cloud Run at the new image:
+#   gcloud run services update feedback-service --image=...
+# No long-lived keys: auth to GCP uses Workload Identity Federation (OIDC).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "feedback-service/**"
+      - ".github/workflows/deploy-feedback-service.yml"
+  workflow_dispatch:
+
+# id-token: write is required for Workload Identity Federation.
+permissions:
+  contents: read
+  id-token: write
+  packages: write
+
+env:
+  PROJECT:      wudong-agent-master
+  REGION:       us-central1
+  SERVICE:      feedback-service
+  REPO:         feedback-service
+  IMAGE_NAME:   feedback-service
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Auth to GCP (Workload Identity Federation)
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account:             ${{ secrets.GCP_DEPLOYER_SA }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Build & push image (linux/amd64)
+        working-directory: feedback-service
+        env:
+          SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT }}/${{ env.REPO }}/${{ env.IMAGE_NAME }}"
+          docker build --platform linux/amd64 -t "${IMAGE}:latest" -t "${IMAGE}:sha-${SHA::7}" .
+          docker push "${IMAGE}:latest"
+          docker push "${IMAGE}:sha-${SHA::7}"
+          echo "image=${IMAGE}:sha-${SHA::7}" >> "$GITHUB_OUTPUT"
+        id: build
+
+      - name: Deploy to Cloud Run (image-only update; config owned by Terraform)
+        run: |
+          gcloud run services update "${{ env.SERVICE }}" \
+            --project="${{ env.PROJECT }}" \
+            --region="${{ env.REGION }}" \
+            --image="${{ steps.build.outputs.image }}" \
+            --quiet
+
+      - name: Show service URL
+        run: |
+          gcloud run services describe "${{ env.SERVICE }}" \
+            --project="${{ env.PROJECT }}" \
+            --region="${{ env.REGION }}" \
+            --format="value(status.url)"

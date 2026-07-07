@@ -77,6 +77,33 @@ output "db_user" {
   value       = google_sql_user.main.name
 }
 
+# Feedback Service (Cloud Run)
+output "feedback_service_url" {
+  description = "Public URL of the feedback-service Cloud Run service"
+  value       = google_cloud_run_v2_service.feedback_service.uri
+}
+
+output "feedback_service_image" {
+  description = "Artifact Registry image path used by feedback-service (Terraform ignores image changes after create)"
+  value       = local.feedback_service_image
+}
+
+output "artifact_registry_repo" {
+  description = "Artifact Registry Docker repository for feedback-service"
+  value       = google_artifact_registry_repository.feedback_service.id
+}
+
+# Workload Identity Federation (GitHub Actions)
+output "github_actions_deployer_email" {
+  description = "Service account GitHub Actions impersonates to deploy"
+  value       = google_service_account.github_actions.email
+}
+
+output "github_wif_provider" {
+  description = "Full resource name of the WIF pool provider (used in GitHub Actions auth config)"
+  value       = google_iam_workload_identity_pool_provider.github.name
+}
+
 # SSH command
 output "ssh_command" {
   description = "Command to SSH into the VM"

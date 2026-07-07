@@ -327,6 +327,10 @@ resource "google_sql_database_instance" "main" {
     disk_autoresize_limit           = 20
     activation_policy               = "ALWAYS"
     availability_type               = "ZONAL"
+    database_flags {
+      name  = "cloudsql.iam_authentication"
+      value = "on"
+    }
     backup_configuration {
       enabled                      = true
       binary_log_enabled           = false

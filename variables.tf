@@ -102,3 +102,11 @@ variable "db_password_length" {
   type        = number
   default     = 16
 }
+
+# GitHub Actions (Workload Identity Federation)
+
+variable "github_repo" {
+  description = "GitHub repository allowed to impersonate the deployer SA via Workload Identity Federation, in the form 'owner/name' (e.g. 'wudong/gcloud'). Leave empty to disable GitHub Actions deploys."
+  type        = string
+  default     = ""
+}
