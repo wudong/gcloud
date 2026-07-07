@@ -33,7 +33,7 @@ export interface FeedbackResponse {
   id: string;
 }
 
-const DEFAULT_BASE_URL = 'https://feedback-service-xxxxx-uc.a.run.app';
+const DEFAULT_BASE_URL = 'https://feedback.graceliu.uk';
 
 let _baseUrl = DEFAULT_BASE_URL;
 

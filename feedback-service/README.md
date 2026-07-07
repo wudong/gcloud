@@ -54,7 +54,7 @@ Shared feedback collection API — one service, multiple apps.
 ### Submit feedback (JSON)
 
 ```bash
-curl -X POST https://feedback-service-xxxxx-uc.a.run.app/feedback \
+curl -X POST https://feedback.graceliu.uk/feedback \
   -H "Content-Type: application/json" \
   -d '{
     "app_id": "tt-players",
@@ -68,7 +68,7 @@ curl -X POST https://feedback-service-xxxxx-uc.a.run.app/feedback \
 ### Submit feedback with screenshots
 
 ```bash
-curl -X POST https://feedback-service-xxxxx-uc.a.run.app/feedback/multipart \
+curl -X POST https://feedback.graceliu.uk/feedback/multipart \
   -F "app_id=tt-players" \
   -F "message=Button is misaligned" \
   -F "message_type=bug" \
@@ -78,7 +78,7 @@ curl -X POST https://feedback-service-xxxxx-uc.a.run.app/feedback/multipart \
 ### Update feedback (link to GitHub issue)
 
 ```bash
-curl -X PATCH https://feedback-service-xxxxx-uc.a.run.app/admin/feedback/<id> \
+curl -X PATCH https://feedback.graceliu.uk/admin/feedback/<id> \
   -H "Authorization: Bearer <ADMIN_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{"status": "converted_to_issue", "github_issue_url": "https://github.com/user/repo/issues/42"}'
@@ -98,7 +98,7 @@ curl -X PATCH https://feedback-service-xxxxx-uc.a.run.app/admin/feedback/<id> \
 ```typescript
 import { submitFeedback, configureFeedbackService } from './client';
 
-configureFeedbackService('https://feedback-service-xxxxx-uc.a.run.app');
+configureFeedbackService('https://feedback.graceliu.uk');
 
 await submitFeedback({
   appId: 'tt-players',

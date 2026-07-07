@@ -344,7 +344,7 @@ app.get('/admin/feedback/attachments/:id', requireAuth, async (c) => {
 // ---------------------------------------------------------------------------
 // GET /admin — simple admin dashboard (HTML)
 // ---------------------------------------------------------------------------
-app.get('/admin', requireAuth, async (c) => {
+app.get('/admin', async (c) => {
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
