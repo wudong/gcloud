@@ -309,14 +309,37 @@ gh run watch --repo wudong/gcloud
 
 ---
 
-## 10. Pointers for agents
+## 11. Remote state
+
+State lives in GCS, not on disk:
+
+- **Bucket:** `wudong-agent-master-tfstate` (object `gcloud/default.tfstate`)
+- **Hardening:** uniform bucket-level access, object versioning (rollback),
+  public-access-prevention enforced, IAM limited to `wudong.liu@gmail.com`
+  (`roles/storage.objectAdmin`).
+- **Managed out-of-band, deliberately NOT in Terraform** — so the state bucket
+  isn't self-referential. Recreate it with the commands in `backend.tf`.
+- The bucket is separate from the app-data bucket `wd-agents-storage-bucket`
+  (which has a 90-day delete lifecycle — never use it for state).
+
+Because `terraform.tfstate` contains plaintext secrets (DB password, etc.),
+the bucket IAM is the access boundary — anyone who can read the bucket can read
+those secrets.
+
+`terraform.tfstate` and `*.tfstate.*.backup` are gitignored and should NOT
+exist locally after migration — local copies were deleted. The single source
+of truth is the GCS object (plus its versioned history).
+
+## 12. Pointers for agents
 
 - Before changing `feedback-service.tf`, re-read §4 and §8 (gotchas 1, 2, 6).
 - After any `terraform import`, run `terraform plan` and check for
   `forces replacement` — that's the project-number-vs-ID smell (gotcha 3).
 - After any change to the Cloud Run service, confirm the new revision is
   `Ready` and `/health` returns 200 before declaring done.
-- Don't commit `terraform.tfstate`, `*.tfstate.*.backup`, or `terraform.tfvars`
-  (all gitignored).
+- State is remote (GCS). `terraform init` pulls/pushes it automatically; you
+  don't manage local `terraform.tfstate` files.
+- Don't commit `terraform.tfvars` (gitignored; contains billing account +
+  `github_repo`).
 - The deploy pipeline is image-only; if a change needs new env/secrets/scaling,
   do it in Terraform (`terraform apply`), not in the workflow.
